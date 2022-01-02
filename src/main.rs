@@ -58,3 +58,22 @@ fn main() {
         .collect();
     println!("input 1 {:?}", solve1(&input_signals));
 }
+
+#[test]
+fn compare_sets() {
+    let s1: HashSet<char> = "cdfeb".chars().collect();
+    let s2: HashSet<char> = "ecbfd".chars().collect();
+    assert_eq!(s1,s2);
+    let s3: HashSet<char> = "zcbde".chars().collect();
+    assert_ne!(s1,s3);
+}
+
+#[test]
+fn interset_sets() {
+    let s1: HashSet<char> = "fab".chars().collect();
+    let s2: HashSet<char> = "ab".chars().collect();
+    let s3: HashSet<char> = s1.intersection(&s2).cloned().collect();
+    let s4: HashSet<char> = "ab".chars().collect();
+    assert_eq!(s3,s4);
+}
+
