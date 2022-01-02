@@ -116,22 +116,78 @@ this gives us a nice starting point but may be nice to have a general algorithm 
 
 then combine with this initial step
 
-start with a map of candidates 
+start with a map of candidates grouped by length
+here I show the digit it could be and the original segments
+
+len 2 (1, cf)
+ab
+
+len 3 (7, acf)
+dab
+
+len 4 (4, bcdf)
+eafb
 
 
+len 5 (2,3 or 5, acdeg, acdfg or abdfg)
+cdfbe
+gcdfa 
+fbcad
 
+len 6 (6,9 or 0, abdefg, abcdfg, abcefg)
+cefabd
+cdfgeb
+cagedb
 
+len 7 (can only be 8)
+acedgfb
 
+So here's the algorithm, given the list of segments by length and a
+candidate mapping recursively assign, and each call returns None for failure
+or success with a solution mapping which can then be interpreted to get the 
+digits. 
 
+```
+fn assign_mapping(input: Vec<HashSet<char>>, // list of inputs sorted by len 
+    candidate_map: HashMap<char,HashSet<char>>, // current map of new digit to originals
+    digit_segments: HashMap<u8, HashSet<char>>, // map of digits to the original segments they use
+    digit_lengths: HashMap<u8, Vec<u8>>, // map of lengths of digits so we can look up candidates,
+    digits_used: HashSet<u8> // digits we have looked at and removed from consideration
+    ) 
+    -> Option<HashSet<char>>)
+```
 
+assign mapping ()
+check for victory (in which candidate map has only mapping in each digit)
 
+take the input head
+  ab 
+  length is 2 
+  look up in digit lengths you get [1] (this can only be 1)
+  for each candidate digit (1)
+      let segments = lookup from digit_segemnts (for 1 returns cf)
+      let result = assign_mapping(tail of input,
+         update candidate map(ab, cf, candidate_map),
+         digit_segments,
+         digit_lengths,
+         digits used with candidate (1) removed)
+      if result is not none return result and party
+  end
+end
 
+```
+fn update_candidate_map(
+    new_digits: Vec<char>,
+    candidates: Vec<char>,
+    candidate_map: HashMap<char,HashSet<char>>, // current map of new digit to originals
+    ) 
+    -> HashMap<char,HashSet<char>>
+```
+e.g we get cf, ab, candidate_map
 
+what we do is take the intersection of the candidate map for each new digit 
 
+so whatever c was it will be ab and f will be ab too.
 
-
-
-
-
-
+we return the new map 
 
