@@ -49,6 +49,10 @@ fn assign_mapping(
     digit_segments: &HashMap<u8, HashSet<char>>, // map of digits to the original segments they use
     digits_unused: &HashSet<u8>, // digits we have looked at and removed from consideration
 ) -> Option<HashMap<char, HashSet<char>>> {
+    if input.len() == 0 {
+        return Some(candidate_map.clone());
+    }
+
     let head = input.first()?;
     let hl = head.len() as u8;
     let candidates: Vec<u8> = find_digits_with_n_segments(hl, digit_segments)
@@ -57,16 +61,27 @@ fn assign_mapping(
         .cloned()
         .collect();
 
-    println!("head {:?} candidates {:?}", head, candidates);
+    // println!("head {:?} candidates {:?}", head, candidates);
 
     if candidates.len() == 0 {
-        println!("no candidates with len {:?}", hl);
+        // println!("no candidates with len {:?}", hl);
         // panic!("no candidates with len {:?}", hl);
-        return None;
+        // return None;
+    } else if candidates.len() > 1 {
+        // just skip
+        let mut tail = input.clone();
+        tail.remove(0);
+        return assign_mapping(
+                &tail,
+                &candidate_map,
+                &digit_segments,
+                &digits_unused,
+            );
+
     }
 
     for digit in candidates {
-        println!("digit {:?}", &digit);
+        // println!("digit {:?}", &digit);
         if let Some(segments) = digit_segments.get(&digit) {
             let mut new_digits_unused = digits_unused.clone();
             new_digits_unused.remove(&digit);
@@ -74,12 +89,12 @@ fn assign_mapping(
             tail.remove(0);
             let updated_candidate_map = update_candidate_map(head, segments, candidate_map);
 
-            println!(
-                "candidates updated with {:?} {:?}\nprevious {:?}\nnow {:?}",
-                head, segments,
-                candidate_map,
-                updated_candidate_map
-            );
+            // println!(
+            //     "candidates updated with {:?} {:?}\nprevious {:?}\nnow {:?}",
+            //     head, segments,
+            //     candidate_map,
+            //     updated_candidate_map
+            // );
 
             // Don't continue if something has no candidates
             let failed = updated_candidate_map.iter().any(|(_, v)| v.len() == 0);
@@ -107,7 +122,7 @@ fn assign_mapping(
             );
 
             if result.is_some() {
-                println!("we got some");
+                // println!("we got some");
                 return result;
             }
         } else {
@@ -142,19 +157,39 @@ fn find_digits_with_n_segments(n: u8, digit_segments: &HashMap<u8, HashSet<char>
         .collect()
 }
 
+
+fn cm_helper(input: &HashMap<char,HashSet<char>>, om: HashMap<char,char>) -> Option<HashMap<char,char>> {
+
+
+    todo!();
+}
+
+// Take a mappying of segments to possible original segments and reduce it down to a consistent 
+// mapping with only one value per input by brute force
+fn consistent_mapping(cm: &HashMap<char,HashSet<char>>) -> HashMap<char,char> {
+    cm_helper(cm, HashMap::new()).expect("Failed to make a consistent mapping")
+}
+
 fn solve_pattern(pattern: &Pattern) -> u64 {
     let candidate_map = make_candidate_map();
     let digit_segments = make_digit_segments();
     let unused_digits = (0..=9).collect();
     let mut sorted_pattern = pattern.patterns.clone();
     sorted_pattern.sort_by(|a, b| a.len().cmp(&b.len()));
-    let result = assign_mapping(
+    let candidate_map = assign_mapping(
         &sorted_pattern,
         &candidate_map,
         &digit_segments,
         &unused_digits,
     );
-    println!("result {:?}", result);
+
+    // Now we reduced the search space to a smaller map find a valid 
+    // mapping with brute force
+   
+    let cm = candidate_map.expect("Candidate map should not be empty");
+    let candidate_map_2 = consistent_mapping(&cm);
+    println!("{:?}", &cm);
+
     1
 }
 

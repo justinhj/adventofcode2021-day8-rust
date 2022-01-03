@@ -57,6 +57,14 @@ e    f
 e    f 
  gggg  
 
+a -> c
+b -> f
+c -> g
+d -> a
+e -> b
+f -> d
+g -> e
+
 acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf
 
 Here the original digit 0 is below and the new mapping is above.
@@ -195,4 +203,27 @@ what we do is take the intersection of the candidate map for each new digit
 so whatever c was it will be ab and f will be ab too.
 
 we return the new map 
+
+this then has to be used in a brute force reduction of the candidates 
+
+example 
+
+a { b,c} b { b,c } c { a,b,c }
+
+set the output map to empty 
+
+assign(input map, outputmap) outputmap
+
+  if output map is a winner return it 
+  else
+
+  take a key (a)
+    for each candidate (b,c) 
+       assign(map without key a, candidate map has a -> b)
+	   if returns Some we're done
+	   otherwise continue
+
+
+	 
+
 
