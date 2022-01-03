@@ -44,13 +44,78 @@ fn solve1(patterns: &Vec<Pattern>) -> u32 {
 }
 
 fn assign_mapping(
-    input: Vec<HashSet<char>>,                   // list of inputs sorted by len
-    candidate_map: HashMap<char, HashSet<char>>, // current map of new digit to originals
-    digit_segments: HashMap<u8, HashSet<char>>,  // map of digits to the original segments they use
-    digit_lengths: HashMap<u8, Vec<u8>>, // map of lengths of digits so we can look up candidates,
-    digits_used: HashSet<u8>,            // digits we have looked at and removed from consideration
-) -> Option<HashSet<char>> {
-    todo!()
+    input: &Vec<HashSet<char>>, // list of inputs sorted by len
+    candidate_map: &HashMap<char, HashSet<char>>, // current map of new digit to originals
+    digit_segments: &HashMap<u8, HashSet<char>>, // map of digits to the original segments they use
+    digits_unused: &HashSet<u8>, // digits we have looked at and removed from consideration
+) -> Option<HashMap<char, HashSet<char>>> {
+    let head = input.first()?;
+    let hl = head.len() as u8;
+    let candidates: Vec<u8> = find_digits_with_n_segments(hl, digit_segments)
+        .iter()
+        .filter(|digit| digits_unused.contains(digit))
+        .cloned()
+        .collect();
+
+    println!("head {:?} candidates {:?}", head, candidates);
+
+    if candidates.len() == 0 {
+        println!("no candidates with len {:?}", hl);
+        // panic!("no candidates with len {:?}", hl);
+        return None;
+    }
+
+    for digit in candidates {
+        println!("digit {:?}", &digit);
+        if let Some(segments) = digit_segments.get(&digit) {
+            let mut new_digits_unused = digits_unused.clone();
+            new_digits_unused.remove(&digit);
+            let mut tail = input.clone();
+            tail.remove(0);
+            let updated_candidate_map = update_candidate_map(head, segments, candidate_map);
+
+            println!(
+                "candidates updated with {:?} {:?}\nprevious {:?}\nnow {:?}",
+                head, segments,
+                candidate_map,
+                updated_candidate_map
+            );
+
+            // Don't continue if something has no candidates
+            let failed = updated_candidate_map.iter().any(|(_, v)| v.len() == 0);
+            if failed {
+                println!(
+                    "dead end, no candidates for one segment\nprevious {:?}\nnow {:?}",
+                    candidate_map,
+                    updated_candidate_map
+                );
+                return None;
+            }
+
+            // Finished if everything has one candidate
+            let finished = updated_candidate_map.iter().all(|(_, v)| v.len() == 1);
+            if finished {
+                println!("winrar!");
+                return Some(updated_candidate_map);
+            }
+
+            let result = assign_mapping(
+                &tail,
+                &updated_candidate_map,
+                &digit_segments,
+                &new_digits_unused,
+            );
+
+            if result.is_some() {
+                println!("we got some");
+                return result;
+            }
+        } else {
+            println!("no segments for digit {:?}", digit);
+        }
+    }
+
+    None
 }
 
 // TODO doesn't seem a very idiotatic name
@@ -69,14 +134,27 @@ fn make_digit_segments() -> HashMap<u8, HashSet<char>> {
     ])
 }
 
-fn find_digits_with_n_segments(n: u32, digit_segments: &HashMap<u8, HashSet<char>>) -> Vec<u8> {
-    digit_segments.iter().filter(|(k,v)| v.len() as u32 == n).map(|(k,_)| k.clone()).collect()
+fn find_digits_with_n_segments(n: u8, digit_segments: &HashMap<u8, HashSet<char>>) -> Vec<u8> {
+    digit_segments
+        .iter()
+        .filter(|(k, v)| v.len() as u8 == n)
+        .map(|(k, _)| k.clone())
+        .collect()
 }
 
 fn solve_pattern(pattern: &Pattern) -> u64 {
     let candidate_map = make_candidate_map();
     let digit_segments = make_digit_segments();
-
+    let unused_digits = (0..=9).collect();
+    let mut sorted_pattern = pattern.patterns.clone();
+    sorted_pattern.sort_by(|a, b| a.len().cmp(&b.len()));
+    let result = assign_mapping(
+        &sorted_pattern,
+        &candidate_map,
+        &digit_segments,
+        &unused_digits,
+    );
+    println!("result {:?}", result);
     1
 }
 
@@ -167,11 +245,22 @@ fn candidate_map() {
 }
 
 #[test]
+fn find_digits_with_6_segments_test() {
+    let ds = make_digit_segments();
+    let mut left = find_digits_with_n_segments(6, &ds);
+    left.sort();
+    let mut right = vec![0, 6, 9];
+    right.sort();
+
+    assert_eq!(left, right);
+}
+
+#[test]
 fn find_digits_with_5_segments_test() {
     let ds = make_digit_segments();
     let mut left = find_digits_with_n_segments(5, &ds);
     left.sort();
-    let mut right = vec!(2,3,5);
+    let mut right = vec![2, 3, 5];
     right.sort();
 
     assert_eq!(left, right);
@@ -182,8 +271,19 @@ fn find_digits_with_2_segments_test() {
     let ds = make_digit_segments();
     let mut left = find_digits_with_n_segments(2, &ds);
     left.sort();
-    let mut right = vec!(1);
+    let mut right = vec![1];
     right.sort();
 
     assert_eq!(left, right);
+}
+
+#[test]
+fn part2_test_pattern() {
+    let example_lines = file_to_lines("data/example2.txt").unwrap();
+    let example_signals: Vec<Pattern> = example_lines
+        .into_iter()
+        .map(|line| parse_input(&line.unwrap()))
+        .collect();
+
+    solve_pattern(&example_signals[0]);
 }

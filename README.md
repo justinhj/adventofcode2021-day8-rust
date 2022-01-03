@@ -152,7 +152,7 @@ fn assign_mapping(input: Vec<HashSet<char>>, // list of inputs sorted by len
     candidate_map: HashMap<char,HashSet<char>>, // current map of new digit to originals
     digit_segments: HashMap<u8, HashSet<char>>, // map of digits to the original segments they use
 NOT NEEDED    digit_lengths: HashMap<u8, Vec<u8>>, // map of lengths of digits so we can look up candidates,
-    digits_used: HashSet<u8> // digits we have looked at and removed from consideration
+    digits_unused: HashSet<u8> // digits we have not yet assigned
     ) 
     -> Option<HashSet<char>>)
 ```
@@ -163,7 +163,7 @@ check for victory (in which candidate map has only mapping in each digit)
 take the input head
   ab 
   length is 2 
-  find all digits in digit used where digit_segments has same length (2)
+  find all digits in digit unused where digit_segments has same length (2)
   panic if not found though
    for each candidate digit (1)
       
