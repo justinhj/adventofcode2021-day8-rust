@@ -1,4 +1,8 @@
-# Day 8
+# Advent of Code - Day 8
+
+A horribly convoluted implementation in Rust.
+
+https://adventofcode.com/2021/day/8
 
 ```
 be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
