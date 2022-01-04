@@ -226,31 +226,32 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
 
         // println!("remapped digits {:?}", remapped_digits);
         // Lookup what each digit is
-        let solutions: Vec<Option<&u8>> = remapped_digits
+        let candidate_solution: Vec<Option<&u8>> = remapped_digits
             .iter()
             .map(|segments| {
                 digit_segments
                     .iter()
                     .find(|(_, v)| *v == segments)
             })
-            .filter(|n| (*n).is_some())
             .map(|n| n.map(|s| s.0))    
             .collect();
 
-        // println!("{:?}", solutions);
-
-        let mut out: String = "".to_string();    
-        for num in solutions {
-           match num {
-               Some(n) =>
-                   out.insert(0, '.'),
-                None => 
-                    break
-           }
+        if candidate_solution.iter().all(|n| (*n).is_some()) {
+            println!("{:?}", candidate_solution);
+            let mut multiplier: u64 = 1;
+            let mut acc: u64 = 0;
+            // now convert it into a number and return it
+            for digit in candidate_solution.iter().rev() {
+                let num: u64 = *digit.expect("Whoops") as u64;
+                acc = acc + (num * multiplier);
+                multiplier *= 10;
+            }
+            println!("{:?}", acc);
+            return acc;
         }
-        println!("out {:?}", out);
+
     }
-    1
+    panic!("no solution");
 }
 
 fn solve2(patterns: &Vec<Pattern>) -> u64 {
