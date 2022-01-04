@@ -44,7 +44,7 @@ For example:
  dddd
 e    a
 e    a
- ffff
+a - ffff
 g    b
 g    b
  cccc
@@ -224,6 +224,36 @@ assign(input map, outputmap) outputmap
 	   otherwise continue
 
 
-	 
+a { b,c} b { b,c } c { a,b,c }
 
+when you assign a to b in the first step
+a -> b
+we also must discount b for the remaining choices
+
+two ways to do that , a hashset of assigned segments
+search the map for the candidate 
+
+second is easier for now
+
+target
+
+a -> c
+b -> f
+c -> g
+d -> a
+e -> b
+f -> d
+g -> e
+
+actual
+
+{'e': 'd'
+ 'a': 'c'
+ 'b': 'f'
+ 'c': 'g'
+ 'f': 'b'
+ 'g': 'e'
+ 'd': 'a'}
+ 
+ 
 
