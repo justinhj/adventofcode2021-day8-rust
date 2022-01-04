@@ -1,4 +1,8 @@
-# Day 8
+# Advent of Code - Day 8
+
+A horribly convoluted implementation in Rust.
+
+https://adventofcode.com/2021/day/8
 
 ```
 be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
@@ -6,6 +10,7 @@ be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbg
 
 Digits and the number of segments each has:
 
+```
   0:6     1:2     2:5     3:5     4:4
  aaaa    ....    aaaa    aaaa    ....
 b    c  .    c  .    c  .    c  b    c
@@ -23,17 +28,21 @@ b    .  b    .  .    c  b    c  b    c
 .    f  e    f  .    f  e    f  .    f
 .    f  e    f  .    f  e    f  .    f
  gggg    gggg    ....    gggg    gggg
+```
 
 Insights...
 
 A set of wires in the input must be mapped to a digit 
 Some can be deduced because there is a unique number of digits
 
+```
 6,5,5,5,6,6
 2,3,4,7
-Then three 6's and 5's
+```
 
-Digits with uniques are 1(2),7(3),4(4) and 8(7)
+Then three 6's and 5's.
+
+Digits with uniques are 1(2),7(3),4(4) and 8(7).
 
 Part one is to simply parse the input and count the number of elements with uniques.
 
@@ -41,10 +50,11 @@ Next step, we want to fill out a map of new digit to original digit.
 
 For example:
 
+```
  dddd
 e    a
 e    a
-a - ffff
+ ffff
 g    b
 g    b
  cccc
@@ -64,8 +74,9 @@ d -> a
 e -> b
 f -> d
 g -> e
+```
 
-acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf
+`acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf`
 
 Here the original digit 0 is below and the new mapping is above.
 
@@ -270,8 +281,6 @@ works
 remapped digits [{'d', 'g', 'b', 'a', 'f'}, {'d', 'c', 'g', 'a', 'f'}, {'a', 'd', 'f', 'b', 'g'}, {'d', 'g', 'f', 'c', 'a'}]
 digits [5, 3, 5, 3]
 
-maybe need to find all valid solutions, run it through the digit conversion and see if it works
+need to find all valid solutions, run it through the digit conversion and see if it works
 
-
-
-
+Final note, yep that worked.
