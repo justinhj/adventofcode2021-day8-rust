@@ -1,7 +1,5 @@
-use scanf::sscanf;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::fmt;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader, Lines};
@@ -61,51 +59,20 @@ fn assign_mapping(
         .cloned()
         .collect();
 
-    // println!("head {:?} candidates {:?}", head, candidates);
-
-    if candidates.len() == 0 {
-        // println!("no candidates with len {:?}", hl);
-        // panic!("no candidates with len {:?}", hl);
-        // return None;
-    } else if candidates.len() > 1 {
-        // just skip
+    if candidates.len() > 1 {
+        // just skip non-unique ones
         let mut tail = input.clone();
         tail.remove(0);
         return assign_mapping(&tail, &candidate_map, &digit_segments, &digits_unused);
     }
 
     for digit in candidates {
-        // println!("digit {:?}", &digit);
         if let Some(segments) = digit_segments.get(&digit) {
             let mut new_digits_unused = digits_unused.clone();
             new_digits_unused.remove(&digit);
             let mut tail = input.clone();
             tail.remove(0);
             let updated_candidate_map = update_candidate_map(head, segments, candidate_map);
-
-            // println!(
-            //     "candidates updated with {:?} {:?}\nprevious {:?}\nnow {:?}",
-            //     head, segments,
-            //     candidate_map,
-            //     updated_candidate_map
-            // );
-
-            // Don't continue if something has no candidates
-            let failed = updated_candidate_map.iter().any(|(_, v)| v.len() == 0);
-            if failed {
-                println!(
-                    "dead end, no candidates for one segment\nprevious {:?}\nnow {:?}",
-                    candidate_map, updated_candidate_map
-                );
-                return None;
-            }
-
-            // Finished if everything has one candidate
-            let finished = updated_candidate_map.iter().all(|(_, v)| v.len() == 1);
-            if finished {
-                println!("winrar!");
-                return Some(updated_candidate_map);
-            }
 
             let result = assign_mapping(
                 &tail,
@@ -115,11 +82,8 @@ fn assign_mapping(
             );
 
             if result.is_some() {
-                // println!("we got some");
                 return result;
             }
-        } else {
-            println!("no segments for digit {:?}", digit);
         }
     }
 
@@ -145,7 +109,7 @@ fn make_digit_segments() -> HashMap<u8, HashSet<char>> {
 fn find_digits_with_n_segments(n: u8, digit_segments: &HashMap<u8, HashSet<char>>) -> Vec<u8> {
     digit_segments
         .iter()
-        .filter(|(k, v)| v.len() as u8 == n)
+        .filter(|(_, v)| v.len() as u8 == n)
         .map(|(k, _)| k.clone())
         .collect()
 }
@@ -204,7 +168,6 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
 
     let cm = candidate_map.expect("Candidate map should not be empty");
     let candidate_map_2 = consistent_mapping(&cm);
-    println!("{:?}", &candidate_map_2);
 
     // We have a bunch of candidate maps now try them out for a solution
 
@@ -224,7 +187,6 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
             })
             .collect();
 
-        // println!("remapped digits {:?}", remapped_digits);
         // Lookup what each digit is
         let candidate_solution: Vec<Option<&u8>> = remapped_digits
             .iter()
@@ -237,7 +199,6 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
             .collect();
 
         if candidate_solution.iter().all(|n| (*n).is_some()) {
-            println!("{:?}", candidate_solution);
             let mut multiplier: u64 = 1;
             let mut acc: u64 = 0;
             // now convert it into a number and return it
@@ -246,7 +207,6 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
                 acc = acc + (num * multiplier);
                 multiplier *= 10;
             }
-            println!("{:?}", acc);
             return acc;
         }
 
