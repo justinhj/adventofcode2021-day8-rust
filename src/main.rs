@@ -153,11 +153,12 @@ fn find_digits_with_n_segments(n: u8, digit_segments: &HashMap<u8, HashSet<char>
 fn cm_helper(
     input: &HashMap<char, HashSet<char>>,
     om: &HashMap<char, char>,
-) -> Option<HashMap<char, char>> {
+    oms: &mut Vec<HashMap<char, char>>,
+) {
     // Get one key, if we can't get one we're done...
     let keys: Vec<(&char, &HashSet<char>)> = input.iter().take(1).collect();
     if keys.len() == 0 {
-        Some(om.clone())
+        oms.insert(0, om.clone())
     } else {
         let keyvalue = keys[0];
         for candidate in keyvalue.1 {
@@ -172,19 +173,17 @@ fn cm_helper(
             let mut next_output = om.clone();
             next_output.insert(*keyvalue.0, *candidate);
 
-            let solution = cm_helper(&next_input, &next_output);
-            if solution.is_some() {
-                return solution;
-            }
+            cm_helper(&next_input, &next_output, oms);
         }
-        None
     }
 }
 
 // Take a mappying of segments to possible original segments and reduce it down to a consistent
 // mapping with only one value per input by brute force
-fn consistent_mapping(cm: &HashMap<char, HashSet<char>>) -> HashMap<char, char> {
-    cm_helper(cm, &HashMap::new()).expect("Failed to make a consistent mapping")
+fn consistent_mapping(cm: &HashMap<char, HashSet<char>>) -> Vec<HashMap<char, char>> {
+    let collector: &mut Vec<HashMap<char, char>> = &mut vec![];
+    cm_helper(cm, &HashMap::new(), collector);
+    collector.clone()
 }
 
 fn solve_pattern(pattern: &Pattern) -> u64 {
@@ -207,33 +206,50 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
     let candidate_map_2 = consistent_mapping(&cm);
     println!("{:?}", &candidate_map_2);
 
-    // Remap the segment digits
-    let remapped_digits: Vec<HashSet<char>> = pattern
-        .digits
-        .iter()
-        .map(|a| {
-            a.iter()
-                .map(|s| {
-                    *candidate_map_2
-                        .get(s)
-                        .expect(&format!("Unknown segment {:?}", s))
-                })
-                .collect()
-        })
-        .collect();
+    // We have a bunch of candidate maps now try them out for a solution
 
-    println!("remapped digits {:?}", remapped_digits);
-    // Lookup what each digit is
-    let digits: Vec<u8> = remapped_digits
-        .iter()
-        .map(|segments| {
-            let digit = digit_segments.iter().find(|(k,v)| *v == segments)
-                .expect(&format!("No digit with segments {:?}", segments));
-            *digit.0
-        })
-        .collect();
+    for map in candidate_map_2 {
+        // Remap the segment digits
+        let remapped_digits: Vec<HashSet<char>> = pattern
+            .digits
+            .iter()
+            .map(|a| {
+                a.iter()
+                    .map(|s| {
+                        *map
+                            .get(s)
+                            .expect(&format!("Unknown segment {:?}", s))
+                    })
+                    .collect()
+            })
+            .collect();
 
-    println!("digits {:?}", digits);
+        // println!("remapped digits {:?}", remapped_digits);
+        // Lookup what each digit is
+        let solutions: Vec<Option<&u8>> = remapped_digits
+            .iter()
+            .map(|segments| {
+                digit_segments
+                    .iter()
+                    .find(|(_, v)| *v == segments)
+            })
+            .filter(|n| (*n).is_some())
+            .map(|n| n.map(|s| s.0))    
+            .collect();
+
+        // println!("{:?}", solutions);
+
+        let mut out: String = "".to_string();    
+        for num in solutions {
+           match num {
+               Some(n) =>
+                   out.insert(0, '.'),
+                None => 
+                    break
+           }
+        }
+        println!("out {:?}", out);
+    }
     1
 }
 

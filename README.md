@@ -255,5 +255,23 @@ actual
  'g': 'e'
  'd': 'a'}
  
+ cdfeb should be 5
+ gabdf 
  
+ sometimes works sometimes fails
+ 
+fail
+{'a': 'f', 'c': 'g', 'g': 'e', 'd': 'a', 'b': 'c', 'e': 'b', 'f': 'd'}
+remapped digits [{'c', 'g', 'd', 'a', 'b'}, {'d', 'c', 'f', 'g', 'a'}, {'b', 'g', 'c', 'd', 'a'}, {'c', 'g', 'f', 'a', 'd'}]
+thread 'part2_test_pattern' panicked at 'No digit with segments {'c', 'g', 'd', 'a', 'b'}', src/main.rs:231:18
+
+works
+{'f': 'd', 'g': 'e', 'a': 'c', 'b': 'f', 'e': 'b', 'd': 'a', 'c': 'g'}
+remapped digits [{'d', 'g', 'b', 'a', 'f'}, {'d', 'c', 'g', 'a', 'f'}, {'a', 'd', 'f', 'b', 'g'}, {'d', 'g', 'f', 'c', 'a'}]
+digits [5, 3, 5, 3]
+
+maybe need to find all valid solutions, run it through the digit conversion and see if it works
+
+
+
 
