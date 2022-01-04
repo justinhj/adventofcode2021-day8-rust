@@ -11,16 +11,15 @@ fn file_to_lines(file_path: &str) -> io::Result<Lines<BufReader<File>>> {
     Ok(lines)
 }
 
-#[derive(Debug)]
 struct Pattern {
     patterns: Vec<HashSet<char>>,
     digits: Vec<HashSet<char>>,
 }
 
 fn parse_input(input: &str) -> Pattern {
-    let split: Vec<&str> = input.split("|").collect();
-    let patterns: Vec<&str> = split[0].split(" ").filter(|s| !s.is_empty()).collect();
-    let digits: Vec<&str> = split[1].split(" ").filter(|s| !s.is_empty()).collect();
+    let split: Vec<&str> = input.split('|').collect();
+    let patterns = split[0].split(' ').filter(|s| !s.is_empty());
+    let digits = split[1].split(' ').filter(|s| !s.is_empty());
 
     Pattern {
         patterns: patterns.into_iter().map(|p| p.chars().collect()).collect(),
@@ -28,7 +27,7 @@ fn parse_input(input: &str) -> Pattern {
     }
 }
 
-fn solve1(patterns: &Vec<Pattern>) -> u32 {
+fn solve1(patterns: &[Pattern]) -> u32 {
     let mut count = 0;
     let unique_digit_counts = vec![2, 3, 4, 7];
     for pattern in patterns {
@@ -41,13 +40,15 @@ fn solve1(patterns: &Vec<Pattern>) -> u32 {
     count
 }
 
+// TODO there must be a better pattern here than passing references to hashmaps and then 
+// making copies of them for the next step for the recursion.
 fn assign_mapping(
-    input: &Vec<HashSet<char>>, // list of inputs sorted by len
+    input: &[HashSet<char>], // list of inputs sorted by len
     candidate_map: &HashMap<char, HashSet<char>>, // current map of new digit to originals
     digit_segments: &HashMap<u8, HashSet<char>>, // map of digits to the original segments they use
     digits_unused: &HashSet<u8>, // digits we have looked at and removed from consideration
 ) -> Option<HashMap<char, HashSet<char>>> {
-    if input.len() == 0 {
+    if input.is_empty() {
         return Some(candidate_map.clone());
     }
 
@@ -61,23 +62,21 @@ fn assign_mapping(
 
     if candidates.len() > 1 {
         // just skip non-unique ones
-        let mut tail = input.clone();
-        tail.remove(0);
-        return assign_mapping(&tail, &candidate_map, &digit_segments, &digits_unused);
+        let tail = &input[1..];
+        return assign_mapping(tail, candidate_map, digit_segments, digits_unused);
     }
 
     for digit in candidates {
         if let Some(segments) = digit_segments.get(&digit) {
             let mut new_digits_unused = digits_unused.clone();
             new_digits_unused.remove(&digit);
-            let mut tail = input.clone();
-            tail.remove(0);
+            let tail = &input[1..];
             let updated_candidate_map = update_candidate_map(head, segments, candidate_map);
 
             let result = assign_mapping(
-                &tail,
+                tail,
                 &updated_candidate_map,
-                &digit_segments,
+                digit_segments,
                 &new_digits_unused,
             );
 
@@ -110,7 +109,7 @@ fn find_digits_with_n_segments(n: u8, digit_segments: &HashMap<u8, HashSet<char>
     digit_segments
         .iter()
         .filter(|(_, v)| v.len() as u8 == n)
-        .map(|(k, _)| k.clone())
+        .map(|(k, _)| *k)
         .collect()
 }
 
@@ -121,7 +120,7 @@ fn cm_helper(
 ) {
     // Get one key, if we can't get one we're done...
     let keys: Vec<(&char, &HashSet<char>)> = input.iter().take(1).collect();
-    if keys.len() == 0 {
+    if keys.is_empty() {
         oms.insert(0, om.clone())
     } else {
         let keyvalue = keys[0];
@@ -155,7 +154,7 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
     let digit_segments = make_digit_segments();
     let unused_digits = (0..=9).collect();
     let mut sorted_pattern = pattern.patterns.clone();
-    sorted_pattern.sort_by(|a, b| a.len().cmp(&b.len()));
+    sorted_pattern.sort_by_key(|k| k.len());
     let candidate_map = assign_mapping(
         &sorted_pattern,
         &candidate_map,
@@ -181,7 +180,7 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
                     .map(|s| {
                         *map
                             .get(s)
-                            .expect(&format!("Unknown segment {:?}", s))
+                            .unwrap_or_else(|| panic!("Unknown segment {:?}", s))
                     })
                     .collect()
             })
@@ -204,7 +203,7 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
             // now convert it into a number and return it
             for digit in candidate_solution.iter().rev() {
                 let num: u64 = *digit.expect("Whoops") as u64;
-                acc = acc + (num * multiplier);
+                acc += num * multiplier;
                 multiplier *= 10;
             }
             return acc;
@@ -214,7 +213,7 @@ fn solve_pattern(pattern: &Pattern) -> u64 {
     panic!("no solution");
 }
 
-fn solve2(patterns: &Vec<Pattern>) -> u64 {
+fn solve2(patterns: &[Pattern]) -> u64 {
     let mut sum = 0;
     for pattern in patterns {
         sum += solve_pattern(pattern);
@@ -234,7 +233,7 @@ fn update_candidate_map(
             .get(&digit)
             .expect("Candidate map should have all digits");
         if new_digits.contains(&digit) {
-            let intersect = current.intersection(&candidates).cloned().collect();
+            let intersect = current.intersection(candidates).cloned().collect();
             hm.insert(digit, intersect);
         } else {
             hm.insert(digit, current.clone());
