@@ -1,8 +1,17 @@
 # Advent of Code - Day 8
 
-A horribly convoluted implementation in Rust.
+A horribly convoluted implementation in Rust of this problem...
 
 https://adventofcode.com/2021/day/8
+
+The solution and my working is below, but there is a much simpler solution as shown in this Reddit thread.
+
+https://www.reddit.com/r/adventofcode/comments/rcnqnr/2021_day_8_part_2_quick_logic_no_math/
+
+TODO My code makes a lot of obnoxious use of clone. Some of that can be mitigated by using persistent data structures such as those implemented in this crate.
+
+https://github.com/orium/rpds
+
 
 ```
 be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
